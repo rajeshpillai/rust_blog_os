@@ -22,7 +22,7 @@ By default, all Rust crates link the standard library, which depends on the oper
 
 We start by creating a new cargo application project. The easiest way to do this is through the command line:
 
-cargo new blog_os --bin --edition 2018
+```cargo new blog_os --bin --edition 2018```
 
 I named the project blog_os, but of course you can choose your own name. The --bin flag specifies that we want to create an executable binary (in contrast to a library) and the --edition 2018 flag specifies that we want to use the 2018 edition of Rust for our crate. When we run the command, cargo creates the following directory structure for us:
 
@@ -39,11 +39,13 @@ Right now our crate implicitly links the standard library. Let’s try to disabl
 
 // main.rs
 
+```
 #![no_std]
 
 fn main() {
     println!("Hello, world!");
 }
+```
 
 When we try to build it now (by running cargo build), the following error occurs:
 
@@ -59,13 +61,17 @@ So let’s remove the printing and try again with an empty main function:
 
 // main.rs
 
+```
 #![no_std]
 
 fn main() {}
+```
 
+```
 > cargo build
 error: `#[panic_handler]` function required, but not found
 error: language item required, but not found: `eh_personality`
+```
 
 Now the compiler is missing a #[panic_handler] function and a language item.
 🔗
@@ -73,8 +79,8 @@ Panic Implementation
 
 The panic_handler attribute defines the function that the compiler should invoke when a panic occurs. The standard library provides its own panic handler function, but in a no_std environment we need to define it ourselves:
 
-// in main.rs
 ```
+// in main.rs
 use core::panic::PanicInfo;
 
 /// This function is called on panic.
@@ -98,11 +104,13 @@ Disabling Unwinding
 
 There are other use cases as well for which unwinding is undesirable, so Rust provides an option to abort on panic instead. This disables the generation of unwinding symbol information and thus considerably reduces binary size. There are multiple places where we can disable unwinding. The easiest way is to add the following lines to our Cargo.toml:
 
+```
 [profile.dev]
 panic = "abort"
 
 [profile.release]
 panic = "abort"
+```
 
 This sets the panic strategy to abort for both the dev profile (used for cargo build) and the release profile (used for cargo build --release). Now the eh_personality language item should no longer be required.
 
